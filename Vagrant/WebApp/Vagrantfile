@@ -15,7 +15,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "ansible" do |ansible|
 
   	ansible.verbose        = true
-    ansible.playbook = "../../Ansible/Automated_Scripts/HuntEvil.yaml"
+    ansible.playbook = "../../Ansible/Automated_Scripts/WebApp.yaml"
     ansible.extra_vars = {
                           RunningOn: "0.0.0.0:8000", App: "App"
 
