@@ -1,0 +1,273 @@
+---
+  - name: Install screen
+    become: true
+    when: ansible_os_family ==  "Debian"
+    apt:
+      name: screen
+      update_cache: true
+      state: latest
+  - name: Install Python3
+    become: true
+    package:
+      name: python3
+      state: latest
+
+  - name: Install pip
+    become: true
+    when: ansible_os_family ==  "Debian"
+    apt:
+      name: python3-pip
+      update_cache: true
+      state: latest
+
+  - name: Update pip
+    command: pip3 install --upgrade pip
+    become: true
+
+  - name: Configure pip3
+    raw: ln -s /usr/bin/pip3 /usr/bin/pip
+    become: true
+    ignore_errors: yes
+
+  - name: Install sql client
+    become: true
+    apt:
+      name: libmysqlclient-dev
+      update_cache: true
+      state: latest
+
+  - name: Install Django via pip
+    raw: pip install django
+    become: true
+
+  - name: Install boostrap via pip
+    raw: pip install django-bootstrap3
+    become: true
+
+  - name: Install mysqlclient via pip
+    raw: pip install mysqlclient
+    become: true
+
+  - name: Create Django project
+    command: django-admin startproject WebApp
+    become: yes
+    args:
+      chdir: /opt
+      creates: WebApp
+
+  - name: Create Django App
+    command: python3 manage.py startapp {{ App }}
+    become: yes
+    args:
+      chdir: /opt/WebApp
+      creates: "{{ App }}"
+
+  - name: Insert bootstrap config
+    blockinfile:
+      dest: /opt/WebApp/WebApp/settings.py
+      block: |
+        # Bootstrap settings :
+        BOOTSTRAP3 = {
+
+            # The URL to the jQuery JavaScript file
+            'jquery_url': '//code.jquery.com/jquery.min.js',
+
+            # The Bootstrap base URL
+            'base_url': '//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/',
+
+            # The complete URL to the Bootstrap CSS file (None means derive it from base_url)
+            'css_url': None,
+
+            # The complete URL to the Bootstrap CSS file (None means no theme)
+            'theme_url': None,
+
+            # The complete URL to the Bootstrap JavaScript file (None means derive it from base_url)
+            'javascript_url': None,
+
+            # Put JavaScript in the HEAD section of the HTML document (only relevant if you use bootstrap3.html)
+            'javascript_in_head': True,
+
+            # Include jQuery with Bootstrap JavaScript (affects django-bootstrap3 template tags)
+            'include_jquery': False,
+
+            # Label class to use in horizontal forms
+            'horizontal_label_class': 'col-md-3',
+
+            # Field class to use in horizontal forms
+            'horizontal_field_class': 'col-md-9',
+
+            # Set HTML required attribute on required fields, for Django <= 1.8 only
+            'set_required': True,
+
+            # Set HTML disabled attribute on disabled fields, for Django <= 1.8 only
+            'set_disabled': False,
+
+            # Set placeholder attributes to label if no placeholder is provided
+            'set_placeholder': True,
+
+            # Class to indicate required (better to set this in your Django form)
+            'required_css_class': '',
+
+            # Class to indicate error (better to set this in your Django form)
+            'error_css_class': 'has-error',
+
+            # Class to indicate success, meaning the field has valid input (better to set this in your Django form)
+            'success_css_class': 'has-success',
+
+            # Renderers (only set these if you have studied the source and understand the inner workings)
+            'formset_renderers':{
+                'default': 'bootstrap3.renderers.FormsetRenderer',
+            },
+            'form_renderers': {
+                'default': 'bootstrap3.renderers.FormRenderer',
+            },
+            'field_renderers': {
+                'default': 'bootstrap3.renderers.FieldRenderer',
+                'inline': 'bootstrap3.renderers.InlineFieldRenderer',
+            },
+        }
+      backup: yes
+    become: yes
+
+
+  - name: Set some Django's settings
+    lineinfile:
+      dest: /opt/WebApp/WebApp/settings.py
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+    with_items:
+      - { regexp: '^MEDIA_ROOT', line: "MEDIA_ROOT = os.path.join(BASE_DIR, '{{ App }}/media/')" }
+      - { regexp: '^MEDIA_URL', line: "MEDIA_URL = '/media/'" }
+      - { regexp: '^STATIC_ROOT', line: "STATIC_ROOT = os.path.join(BASE_DIR, '{{ App}}/static/')" }
+      - { regexp: '^STATIC_URL', line: "STATIC_URL = '/static/'" }
+      - { regexp: '^STATICFILES_DIRS', line: "STATICFILES_DIRS = (os.path.join(BASE_DIR, 'staticfiles'),)" }
+      - { regexp: "        'ENGINE'", line: "        'ENGINE': 'django.db.backends.mysql'," }
+    become: yes
+
+  - name: Remove SQLLite
+    lineinfile:
+      dest: /opt/WebApp/WebApp/settings.py
+      regexp: ".*'NAME': os.path.join.*"
+      state: absent
+    become: yes
+
+  - name: Add mysql config to settings.py
+    blockinfile:
+      dest: /opt/WebApp/WebApp/settings.py
+      marker: "# {mark} DATABASE CONFIG "
+      insertafter: ".*'ENGINE': 'django.db.backends.mysql'.*"
+      content: |5 # Number of indentation needed
+                   'NAME': 'Django',
+                   'USER': 'root',
+                   'PASSWORD': 'root',
+                   'HOST': '',
+                   'PORT': '', 
+      state: present
+    become: yes
+
+
+  - name: Insert {{ App }} config
+    lineinfile:
+      dest: /opt/WebApp/WebApp/settings.py
+      line: "    '{{ App }}.apps.{{ App }}Config',"
+      insertafter: '^INSTALLED_APPS'
+      state: present
+    become: yes
+
+  - name: Insert bootstrap config
+    lineinfile:
+      dest: /opt/WebApp/WebApp/settings.py
+      line: "    'bootstrap3',"
+      insertafter: '^INSTALLED_APPS'
+      state: present
+    become: yes
+
+  - name : Replace Dir for template
+    replace:
+      path: /opt/WebApp/WebApp/settings.py
+      regexp: ".*'DIRS'.*"
+      replace: "'DIRS': [os.path.join(BASE_DIR, '{{ App }}/Templates'),],"
+    become: yes
+    
+  - name: Copy the Templates including the bootstrap theme
+    copy:
+      src: ../../../Templates/{{ item.fileTemplate }}
+      dest: /opt/WebApp/{{ App }}/Templates/
+    with_items:
+      - { fileTemplate: 'base.html' }
+      - { fileTemplate: 'bootstrap.html' }
+      - { fileTemplate: 'home.html' }
+      - { fileTemplate: 'index.html' }
+    become: yes
+
+  - name: Create index
+    blockinfile:
+      dest: "/opt/WebApp/{{ App }}/views.py"
+      block: |
+        def index(request):
+          template = loader.get_template('home.html')
+          
+          context = {}
+          return HttpResponse(template.render(context, request))
+      insertafter: "^# Create your views here."
+    become: yes
+
+  - name: Create Django database
+    command: mysql -u root -proot -e "CREATE DATABASE Django;"
+    become: yes
+    ignore_errors: yes
+
+  - name: Migrate model
+    command: python3 manage.py migrate
+    become: yes
+    args:
+      chdir: /opt/WebApp
+
+  - name: Add include into views.py
+    lineinfile:
+      dest: "/opt/WebApp/{{ App }}/views.py"
+      insertbefore: "BOF"
+      line: "{{ item.line }}"
+    with_items:
+      - { line: "from django.shortcuts import render" }
+      - { line: "from django.template import loader, Context" }   
+      - { line: "from django.http import HttpResponse" }   
+      - { line: "from django.http import JsonResponse" }
+    become: yes
+
+  - name: Include {{ App }} URL
+    lineinfile:
+      dest: /opt/WebApp/WebApp/urls.py
+      line: "from django.urls import include"
+      insertafter: '.*from django.urls import path.*'
+      state: present
+    become: yes
+
+  - name: Include {{ App }} URL
+    lineinfile:
+      dest: /opt/WebApp/WebApp/urls.py
+      line: "    path('{{ App | lower }}/', include('{{ App }}.urls')),"
+      insertafter: '.*urlpatterns.*'
+      state: present
+    become: yes
+
+  - name: Create urls.py for {{ App }}
+    file:
+      path: "/opt/WebApp/{{ App }}/urls.py"
+      state: touch
+    become: yes
+
+  - name: Add mysql config to urls.py
+    blockinfile:
+      dest: /opt/WebApp/{{ App }}/urls.py
+      marker: ""
+      content: | # Number of indentation needed
+        from django.urls import path
+
+        from . import views
+
+        urlpatterns = [
+            path('', views.index, name='index'),
+        ]
+      state: present
+    become: yes

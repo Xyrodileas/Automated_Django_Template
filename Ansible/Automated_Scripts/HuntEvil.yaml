@@ -1,0 +1,30 @@
+---
+  - hosts: all
+    connection: local
+
+  - hosts: all
+    gather_facts: False
+    remote_user: ubuntu
+
+    pre_tasks:
+    - name: install python 2
+      raw: test -e /usr/bin/python || (sudo apt -y update && sudo apt install -y python-minimal)
+    - name: Gather Fact
+      setup: #Gather Fact
+
+    roles:
+    - role: geerlingguy.mysql
+      become: yes
+    - ../roles/HuntEvil
+
+    tasks:
+
+    - name: Start Server
+      raw: python3 /opt/Hunt/manage.py runserver 0.0.0.0:8000 &
+      become: true
+    - name: Start WebApp in screen
+      command: 'screen -dm python3 /opt/WebApp/manage.py runserver 0.0.0.0:{{ RunningOn }}'
+      async: 60
+      poll: 0
+      sleep: 10
+      become: true

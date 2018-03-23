@@ -1,0 +1,53 @@
+{% extends 'bootstrap.html' %}
+
+{% load bootstrap3 %}
+{% load staticfiles %}
+{# Load CSS and JavaScript #}
+{% block bootstrap_css %}
+
+{% endblock %}
+{% block jsveforeboostrap %}
+
+
+{% endblock %}
+
+
+{% bootstrap_messages %}
+
+
+{% block bootstrap3_content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.18.0/vis.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.18.0/vis.min.css" rel="stylesheet">
+
+    <div class="navbar navbar-inverse navbar">
+        <div class="container-fluid">
+
+              <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="">Web App</a>
+              </div>
+              <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                  <li class="active"><a href="">Home</a></li>
+                  <li class="active"><a href="">Page1</a></li>
+                  <li class="active"><a href="">Page2</a></li>
+                  
+                </ul>
+              </div><!--/.nav-collapse -->
+            </div>
+        </div>
+
+
+
+        
+    <div class="row">
+{% block content %}(no content){% endblock %}
+    </div>
+
+
+{% endblock %}
+
