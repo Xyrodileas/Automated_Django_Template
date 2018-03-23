@@ -1,4 +1,9 @@
 ---
+  - stat:
+      path: /opt/done.txt
+    register: st
+    become: true
+
   - name: Install screen
     become: true
     when: ansible_os_family ==  "Debian"
@@ -128,6 +133,7 @@
         }
       backup: yes
     become: yes
+
 
 
   - name: Set some Django's settings

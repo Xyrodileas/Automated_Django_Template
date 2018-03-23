@@ -15,10 +15,17 @@
     roles:
     - role: geerlingguy.mysql
       become: yes
-    - ../roles/HuntEvil
+    - ../roles/WebApp
 
     tasks:
 
+    - name: Create check file for Django install
+      file:
+        path: /opt/done.txt
+        state: touch
+    become: yes
+    
     - name: Start Server
-      raw: python3 /opt/WebApp/manage.py runserver 0.0.0.0:8000 &
+      raw: nohup python3 /opt/WebApp/manage.py runserver 0.0.0.0:8000 &
       become: true
+

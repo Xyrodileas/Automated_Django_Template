@@ -6,6 +6,8 @@ Automated deployment with Vagrant and Ansible of a Django Template with Bootstra
 # Requirements
 Automagie :
 - Vagrant
+	Pluggin :
+	- vagrant plugin install vagrant-vbguest
 - Ansible
 - Virtualbox
 
@@ -26,6 +28,7 @@ Frontend :
 - Type "vagrant up"
 - Wait for Vagrant and Ansible to do their job
 - Browse localhost:8080/app/ to access the application
+- Go in the Vagrant/WebApp folder to access to your WebApp for developpment
 
 # Automatisation
 
