@@ -1,9 +1,7 @@
 # Automated_Django_Template
 Automated deployment with Vagrant and Ansible of a Django Template with Bootstrap
 
-
-[![Bintray](https://img.shields.io/badge/Ansible-2.4-green.svg)]()[![Bintray](https://img.shields.io/badge/Vagrant-2.0-green.svg)]()[![Bintray](https://img.shields.io/badge/Django-2.0.3-green.svg)]()
-
+[![Bintray](https://img.shields.io/badge/Ansible-2.4-green.svg)]()[![Bintray](https://img.shields.io/badge/Vagrant-2.0-green.svg)]()[![Bintray](https://img.shields.io/badge/Django-2.0.3-green.svg)]()[![Bintray](https://img.shields.io/badge/VirtualBox-5.1-green.svg)]()
 
 # Requirements
 Automagie :
