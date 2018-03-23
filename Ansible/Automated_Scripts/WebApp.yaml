@@ -20,11 +20,5 @@
     tasks:
 
     - name: Start Server
-      raw: python3 /opt/Hunt/manage.py runserver 0.0.0.0:8000 &
-      become: true
-    - name: Start WebApp in screen
-      command: 'screen -dm python3 /opt/WebApp/manage.py runserver 0.0.0.0:{{ RunningOn }}'
-      async: 60
-      poll: 0
-      sleep: 10
+      raw: python3 /opt/WebApp/manage.py runserver 0.0.0.0:8000 &
       become: true
